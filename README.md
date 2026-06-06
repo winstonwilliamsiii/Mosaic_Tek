@@ -19,3 +19,9 @@ Clone the repository and install dependencies:
 git clone https://github.com/<your-username>/mosaic-tek.git
 cd mosaic-tek
 pip install -r requirements.txt
+
+## Contact
+For inquiries, reach out at:
+
+- 📧 Email: info@mosaic-tek.com  
+- 🔗 LinkedIn: [Mosaic-Tek Consulting](https://www.linkedin.com/company/mosaic-tek-consulting/about/?viewAsMember=true)

@@ -1,27 +1,18 @@
-# Mosaic-Tek Consulting Website
-Streamlined in-house development, deployment, and sustainment
+---
 
-## Overview
-This repository contains the source code for the Mosaic-Tek consulting website.  
-The site was formerly hosted with Scala Hosting and is now being rebuilt for in-house development and deployment using **FastAPI** and GitHub Pages.  
-The goal is to modernize the site, streamline operations, and maintain a sustainable deployment model.
+## 📞 Contact
+- **Email:** [info@mosaic-tek.com](mailto:info@mosaic-tek.com)  
+- **Phone:** [202-400-5642](tel:2024005642)  
+- **LinkedIn:** [Mosaic-Tek Consulting](https://www.linkedin.com/company/mosaic-tek-consulting/about/?viewAsMember=true)
 
-## Features
-- FastAPI backend scaffold (`main.py`)
-- Modular router structure (`/consulting`, `/contact`)
-- GitHub Pages deployment plan
-- Roadmap aligned to Sunday launch
-- Future enhancements: Jinja2 templates, styling, analytics
+---
 
-## Installation
-Clone the repository and install dependencies:
-```bash
-git clone https://github.com/<your-username>/mosaic-tek.git
-cd mosaic-tek
-pip install -r requirements.txt
+## ⚡ Deployment
+This site is hosted via **GitHub Pages**.  
+To view the live site:  
+`https://<your-username>.github.io/mosaic-tek/`
 
-## Contact
-For inquiries, reach out at:
+---
 
-- 📧 Email: info@mosaic-tek.com  
-- 🔗 LinkedIn: [Mosaic-Tek Consulting](https://www.linkedin.com/company/mosaic-tek-consulting/about/?viewAsMember=true)
+## 📜 License
+MIT License — see `MIT License.md` for details.

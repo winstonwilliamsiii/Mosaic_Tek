@@ -29,6 +29,13 @@ header {
   padding: 40px 20px;
 }
 
+header img {
+  width: 220px;
+  max-width: 70vw;
+  height: auto;
+  margin-bottom: 10px;
+}
+
 header h1 {
   margin: 0;
 }

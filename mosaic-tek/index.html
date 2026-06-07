@@ -1,46 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mosaic-Tek Consulting</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mosaic-Tek Consulting</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <img src="images/mosaic-tek-logo.jpg" alt="Mosaic-Tek Consulting Logo">
-        <h1>Mosaic-Tek Consulting</h1>
-        <p>Streamlined in-house development, deployment, and sustainment</p>
-        <button class="cta" type="button">Request a Proposal</button>
-    </header>
+  <header class="hero">
+    <div class="hero-content">
+      <img src="images/mosaic-tek-logo.png" alt="Mosaic-Tek Consulting Logo" class="logo">
+      <h1>Mosaic-Tek Consulting</h1>
+      <p>Professional Services in Cloud, ERP, and IT Consulting</p>
+      <a href="#contact"><button class="cta">Request a Proposal</button></a>
+    </div>
+  </header>
 
-    <main>
-        <section class="about">
-            <h2>About Us</h2>
-            <p>
-                Mosaic-Tek provides expert guidance on cloud adoption, migration, and optimization.
-                Formerly hosted with Scala Hosting, we are now building a sustainable in-house platform.
-            </p>
-        </section>
+  <main>
+    <section id="solutions">
+      <h2>Our Solutions</h2>
+      <ul>
+        <li>IT Consulting & Enterprise Architecture</li>
+        <li>Cloud & ERP Implementation</li>
+        <li>Business Process Improvement</li>
+        <li>IT Risk Advisory</li>
+        <li>IT Recruiting & Training</li>
+      </ul>
+    </section>
 
-        <section class="services">
-            <h2>Our Services</h2>
-            <ul>
-                <li>Cloud Consulting</li>
-                <li>ERP & HCM Architecture</li>
-                <li>AI/ML Integration</li>
-            </ul>
-        </section>
+    <section id="about">
+      <h2>About Mosaic-Tek</h2>
+      <p>
+        Founded in 2011, Mosaic-Tek Consulting delivers specialized professional services to the U.S. federal government and private sector. 
+        Our consultative approach empowers clients to overcome obstacles and achieve rapid speed-to-market.
+      </p>
+    </section>
 
-        <section class="contact">
-            <h2>Contact</h2>
-            <p>Email: <a href="mailto:info@mosaic-tek.com">info@mosaic-tek.com</a></p>
-            <p>LinkedIn: <a href="https://www.linkedin.com/company/mosaic-tek-consulting/about/?viewAsMember=true" target="_blank" rel="noopener noreferrer">Mosaic-Tek Consulting</a></p>
-        </section>
-    </main>
+    <section id="contact">
+      <h2>Contact Us</h2>
+      <p>Email: <a href="mailto:info@mosaic-tek.com">info@mosaic-tek.com</a></p>
+      <p>Phone: <a href="tel:2024005642">202-400-5642</a></p>
+      <p>LinkedIn: <a href="https://www.linkedin.com/company/mosaic-tek-consulting/about/?viewAsMember=true" target="_blank">Mosaic-Tek Consulting</a></p>
+    </section>
+  </main>
 
-    <footer>
-        <p>&copy; 2026 Mosaic-Tek Consulting. All rights reserved.</p>
-    </footer>
+  <footer>
+    <p>&copy; 2026 Mosaic-Tek Consulting. All rights reserved.</p>
+  </footer>
+
+  <script>
+    // Fade-in animation on scroll
+    const sections = document.querySelectorAll("section");
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible");
+        }
+      });
+    }, { threshold: 0.2 });
+    sections.forEach(section => observer.observe(section));
+  </script>
 </body>
 </html>
+

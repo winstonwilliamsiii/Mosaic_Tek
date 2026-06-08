@@ -2,6 +2,7 @@
 
 ## 🚀 Overview
 Mosaic-Tek Consulting provides **enterprise IT consulting services** specializing in **Cloud ERP/EPM implementations** and **IT Risk Advisory**.  
+
 We help organizations modernize their technology landscape, streamline operations, and ensure compliance with industry standards.
 
 ---

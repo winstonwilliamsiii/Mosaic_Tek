@@ -1,0 +1,803 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyPs1Od3GdqdmtAIv3foXUjb",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/winstonwilliamsiii/Mosaic_Tek/blob/main/app_py.ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# GCP Billing Export Processing"
+      ],
+      "metadata": {
+        "id": "cLqD8uoBZWEc"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "%%writefile app.py\n",
+        "\n",
+        "import streamlit as st\n",
+        "import pandas as pd\n",
+        "import plotly.express as px\n",
+        "\n",
+        "st.set_page_config(page_title=\"FinOps Biz Ledger 2025\", layout=\"wide\")\n",
+        "st.title(\"🚀 2025 FinOps Dashboard\")\n",
+        "\n",
+        "col1, col2, col3 = st.columns(3)\n",
+        "col1.metric(\"Total Monthly Spend\", \"$298.44\")\n",
+        "col2.metric(\"Business Expenses\", \"$204.80\", delta=\"-15% vs Last Month\")\n",
+        "col3.metric(\"Personal Expenses\", \"$93.64\")\n",
+        "\n",
+        "st.subheader(\"Cash Flow: 1st-15th vs 16th-30th\")\n",
+        "timing_data = pd.DataFrame({\n",
+        "    \"Period\": [\"1st-15th\", \"16th-30th\"],\n",
+        "    \"Spend\": [135.09, 163.35]\n",
+        "    })\n",
+        "fig = px.bar(timing_data, x=\"Period\", y=\"Spend\", color=\"Period\",\n",
+        "             text_auto=True, title=\"Monthly Spend Distribution\")\n",
+        "st.plotly_chart(fig, use_container_width=True)\n",
+        "\n",
+        "st.subheader(\"Cloud & SaaS Vendor Detail\")\n",
+        "vendor_data = [\n",
+        "    {\"Vendor\": \"GitHub\", \"Monthly\": 38.00, \"Due\": \"15th\", \"Account\": \"Schwab\"},\n",
+        "    {\"Vendor\": \"Appwrite\", \"Monthly\": 25.00, \"Due\": \"10th\", \"Account\": \"Business\"},\n",
+        "    {\"Vendor\": \"Railway\", \"Monthly\": 20.00, \"Due\": \"20th\", \"Account\": \"Personal BoA\"},\n",
+        "    {\"Vendor\": \"Google Cloud\", \"Monthly\": 1.00, \"Due\": \"1st\", \"Account\": \"Schwab\"},\n",
+        "    {\"Vendor\": \"Polygon (Annual)\", \"Monthly\": 0.00, \"Annual\": 199.00, \"Due\": \"11/23\"}\n",
+        "]\n",
+        "df_vendors = pd.DataFrame(vendor_data)\n",
+        "st.dataframe(df_vendors, use_container_width=True)\n",
+        "\n",
+        "st.warning(\"⚠️ **Idle Resource Alert:** The following vendors are currently at $0.00 spend: \"\n",
+        "           \"Docker, Anaconda, Vercel, Supabase, and Barchart Plus. \"\n",
+        "           \"Monitor for usage or tier expiration.\")\n",
+        "\n",
+        "st.info(f\"**Unit Economics:** Your current Business spend of $204.80 is spread across \"\n",
+        "        f\"approximately 12 active SaaS vendors, averaging **$17.07 per vendor/month**.\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "5-PtqrO7w8Y6",
+        "outputId": "1d5ef5e6-4746-455b-ed81-dd40a9804df1"
+      },
+      "execution_count": 20,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Writing app.py\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 1,
+      "metadata": {
+        "id": "YIs2Cf88ZJCg"
+      },
+      "outputs": [],
+      "source": [
+        "import pandas as pd\n",
+        "\n",
+        "def ingest_gcp_billing(file_path):\n",
+        "    # Ingest the billing export\n",
+        "    df = pd.read_csv(file_path)\n",
+        "\n",
+        "    # 1. Data Cleaning: Convert usage/export times to datetime objects\n",
+        "    df['usage_start_time'] = pd.to_datetime(df['usage_start_time'])\n",
+        "    df['usage_end_time'] = pd.to_datetime(df['usage_end_time'])\n",
+        "\n",
+        "    # 2. Filtering: Focus on 'Google Cloud Platform' services\n",
+        "    # In a real export, this would filter by Project ID or Service Description\n",
+        "    gcp_expenses = df[df['service_description'].str.contains('Cloud', na=False)]\n",
+        "\n",
+        "    # 3. Handling Nulls: Ensure no missing cost values\n",
+        "    gcp_expenses = gcp_expenses.dropna(subset=['cost'])\n",
+        "\n",
+        "    return gcp_expenses"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [],
+      "metadata": {
+        "id": "SXapdlFqZzt6"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "def map_to_ledger(billing_df):\n",
+        "    # Mapping actual costs to the '2025 Annual Budget' metadata\n",
+        "    # Source [1] identifies GCP is paid via Charles Schwab on the 1st\n",
+        "    billing_df['payment_source'] = 'Charles Schwab'\n",
+        "    billing_df['budgeted_amount'] = 1.00\n",
+        "\n",
+        "    # Calculate Variance (Actual vs. Budgeted)\n",
+        "    summary = billing_df.groupby('service_description')['cost'].sum().reset_index()\n",
+        "    summary['variance'] = summary['cost'] - 1.00\n",
+        "    \n",
+        "    return summary"
+      ],
+      "metadata": {
+        "id": "qkCzr0F3mFAa"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "RKeO0pNF_mv8"
+      },
+      "execution_count": 1,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [],
+      "metadata": {
+        "id": "q7rgMsw0BRkz"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "#The FinOps Logic: Prompt it to calculate specific KPI metrics, such as identifying idle resources, calculating unit economics, or tracking commitment utilization (RI/SP coverage)."
+      ],
+      "metadata": {
+        "id": "0ViGO0eLBZMe"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# This cell provides essential imports for a Streamlit app.\n",
+        "# To properly run and view your Streamlit dashboard in Colab,\n",
+        "# all 'st.' calls and the entire application logic\n",
+        "# must be consolidated and written to 'app.py' (e.g., using '%%writefile app.py' in a single cell),\n",
+        "# and then executed via '!streamlit run app.py'.\n",
+        "import streamlit as st\n",
+        "import pandas as pd\n",
+        "import plotly.express as px"
+      ],
+      "metadata": {
+        "id": "__qVgtFEWNXS"
+      },
+      "execution_count": 19,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Dashboard Configuration"
+      ],
+      "metadata": {
+        "id": "R4ByotQ-WPJw"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "st.set_page_config(page_title=\"FinOps Biz Ledger 2025\", layout=\"wide\")\n",
+        "st.title(\"🚀 2025 FinOps Dashboard\")"
+      ],
+      "metadata": {
+        "id": "QbSMp5tjWTHi",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "07e4eee7-9dc5-4ff2-c8cb-0d9efad93498"
+      },
+      "execution_count": 6,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "2026-07-10 02:01:09.435 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:09.436 WARNING streamlit.runtime.scriptrunner_utils.script_run_context: Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:09.595 \n",
+            "  \u001b[33m\u001b[1mWarning:\u001b[0m to view this Streamlit app on a browser, run it with the following\n",
+            "  command:\n",
+            "\n",
+            "    streamlit run /usr/local/lib/python3.12/dist-packages/colab_kernel_launcher.py [ARGUMENTS]\n",
+            "2026-07-10 02:01:09.596 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:09.599 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "DeltaGenerator()"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 6
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# 1. High-Level KPI Cards (Data from Source [1])"
+      ],
+      "metadata": {
+        "id": "nDEyhFMQWWpl"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "col1, col2, col3 = st.columns(3)\n",
+        "col1.metric(\"Total Monthly Spend\", \"$298.44\")\n",
+        "col2.metric(\"Business Expenses\", \"$204.80\", delta=\"-15% vs Last Month\")\n",
+        "col3.metric(\"Personal Expenses\", \"$93.64\")\n"
+      ],
+      "metadata": {
+        "id": "wXc_ALO6WZY_",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "26488d11-b4be-4768-f7c6-f9cc0a6796c1"
+      },
+      "execution_count": 7,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "2026-07-10 02:01:13.358 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:13.360 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:13.361 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:13.362 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:13.363 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:13.364 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:13.365 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:13.366 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:13.367 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:13.368 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:13.369 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:13.370 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:13.371 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "DeltaGenerator()"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 7
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# 2. Spend Timing Analysis (Data from Source [1])"
+      ],
+      "metadata": {
+        "id": "vTPM4_86Wb4d"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "st.subheader(\"Cash Flow: 1st-15th vs 16th-30th\")\n",
+        "timing_data = pd.DataFrame({\n",
+        "    \"Period\": [\"1st-15th\", \"16th-30th\"],\n",
+        "    \"Spend\": [135.09, 163.35]\n",
+        "    })\n",
+        "fig = px.bar(timing_data, x=\"Period\", y=\"Spend\", color=\"Period\",\n",
+        "             text_auto=True, title=\"Monthly Spend Distribution\")\n",
+        "st.plotly_chart(fig, use_container_width=True)"
+      ],
+      "metadata": {
+        "id": "bAiSwqApWfAk",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "11e0039b-ff0e-4df3-ef3d-fb8ca0e22a7f"
+      },
+      "execution_count": 8,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "2026-07-10 02:01:18.034 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:18.035 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:18.036 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:18.568 Please replace `use_container_width` with `width`.\n",
+            "\n",
+            "`use_container_width` will be removed after 2025-12-31.\n",
+            "\n",
+            "For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.\n",
+            "2026-07-10 02:01:18.581 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:18.582 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:18.583 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:18.584 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:18.585 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "DeltaGenerator()"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 8
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# 3. Vendor Inventory & Commitment Tracker (Data from Sources [2, 3])\n"
+      ],
+      "metadata": {
+        "id": "EiiC6JB9WnE3"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "st.subheader(\"Cloud & SaaS Vendor Detail\")\n",
+        "vendor_data = [\n",
+        "    {\"Vendor\": \"GitHub\", \"Monthly\": 38.00, \"Due\": \"15th\", \"Account\": \"Schwab\"},\n",
+        "    {\"Vendor\": \"Appwrite\", \"Monthly\": 25.00, \"Due\": \"10th\", \"Account\": \"Business\"},\n",
+        "    {\"Vendor\": \"Railway\", \"Monthly\": 20.00, \"Due\": \"20th\", \"Account\": \"Personal BoA\"},\n",
+        "    {\"Vendor\": \"Google Cloud\", \"Monthly\": 1.00, \"Due\": \"1st\", \"Account\": \"Schwab\"},\n",
+        "    {\"Vendor\": \"Polygon (Annual)\", \"Monthly\": 0.00, \"Annual\": 199.00, \"Due\": \"11/23\"}\n",
+        "]\n",
+        "df_vendors = pd.DataFrame(vendor_data)\n",
+        "st.dataframe(df_vendors, use_container_width=True)\n"
+      ],
+      "metadata": {
+        "id": "9a2ti0j4WuLY",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "eb6b9645-cf55-4a73-a509-50f19fd0e1b2"
+      },
+      "execution_count": 9,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "2026-07-10 02:01:27.925 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:27.926 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:27.927 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:27.935 Please replace `use_container_width` with `width`.\n",
+            "\n",
+            "`use_container_width` will be removed after 2025-12-31.\n",
+            "\n",
+            "For `use_container_width=True`, use `width='stretch'`. For `use_container_width=False`, use `width='content'`.\n",
+            "2026-07-10 02:01:27.975 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:27.976 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:27.976 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:27.979 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "DeltaGenerator()"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 9
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# 4. Idle Resource/Free Tier Alert (Data from Sources [2, 3])"
+      ],
+      "metadata": {
+        "id": "zkYe6rASW0aw"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "st.warning(\"⚠️ **Idle Resource Alert:** The following vendors are currently at $0.00 spend: \"\n",
+        "           \"Docker, Anaconda, Vercel, Supabase, and Barchart Plus. \"\n",
+        "           \"Monitor for usage or tier expiration.\")\n"
+      ],
+      "metadata": {
+        "id": "2NCoSbjNW4TI",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "a788b144-272b-476e-dc5a-f2c6a7db053a"
+      },
+      "execution_count": 10,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "2026-07-10 02:01:31.047 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:31.048 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:31.048 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "DeltaGenerator()"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 10
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# 5. Unit Economics Calculation"
+      ],
+      "metadata": {
+        "id": "pN41C0SwXd0I"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "st.info(f\"**Unit Economics:** Your current Business spend of $204.80 is spread across \"\n",
+        "        f\"approximately 12 active SaaS vendors, averaging **$17.07 per vendor/month**.\")"
+      ],
+      "metadata": {
+        "id": "sWK3M5TrXe3N",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "f9f8d6f9-d2bc-4050-839f-0a9c59d1fe13"
+      },
+      "execution_count": 11,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "2026-07-10 02:01:39.234 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:39.236 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n",
+            "2026-07-10 02:01:39.236 Thread 'MainThread': missing ScriptRunContext! This warning can be ignored when running in bare mode.\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "DeltaGenerator()"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 11
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [],
+      "metadata": {
+        "id": "uLLtTqjEWhab"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Install Streamlit"
+      ],
+      "metadata": {
+        "id": "9iFANCFwtAje"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "pip install streamlit"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "FEOu4WUDtFKx",
+        "outputId": "daae88e0-ebef-476b-b6c2-659ec03fba1f"
+      },
+      "execution_count": 3,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Collecting streamlit\n",
+            "  Downloading streamlit-1.59.1-py3-none-any.whl.metadata (9.6 kB)\n",
+            "Requirement already satisfied: altair!=5.4.0,!=5.4.1,<7,>=4.0 in /usr/local/lib/python3.12/dist-packages (from streamlit) (5.5.0)\n",
+            "Requirement already satisfied: blinker<2,>=1.5.0 in /usr/local/lib/python3.12/dist-packages (from streamlit) (1.9.0)\n",
+            "Requirement already satisfied: cachetools<8,>=5.5 in /usr/local/lib/python3.12/dist-packages (from streamlit) (6.2.6)\n",
+            "Requirement already satisfied: click<9,>=7.0 in /usr/local/lib/python3.12/dist-packages (from streamlit) (8.4.2)\n",
+            "Requirement already satisfied: gitpython!=3.1.19,<4,>=3.0.7 in /usr/local/lib/python3.12/dist-packages (from streamlit) (3.1.50)\n",
+            "Requirement already satisfied: numpy<3,>=1.23 in /usr/local/lib/python3.12/dist-packages (from streamlit) (2.0.2)\n",
+            "Requirement already satisfied: packaging>=20 in /usr/local/lib/python3.12/dist-packages (from streamlit) (26.2)\n",
+            "Requirement already satisfied: pandas<4,>=1.4.0 in /usr/local/lib/python3.12/dist-packages (from streamlit) (2.2.2)\n",
+            "Requirement already satisfied: pillow<13,>=7.1.0 in /usr/local/lib/python3.12/dist-packages (from streamlit) (11.3.0)\n",
+            "Collecting pydeck<1,>=0.8.0b4 (from streamlit)\n",
+            "  Downloading pydeck-0.9.3-py2.py3-none-any.whl.metadata (4.2 kB)\n",
+            "Requirement already satisfied: protobuf<8,>=3.20 in /usr/local/lib/python3.12/dist-packages (from streamlit) (5.29.6)\n",
+            "Requirement already satisfied: pyarrow>=7.0 in /usr/local/lib/python3.12/dist-packages (from streamlit) (18.1.0)\n",
+            "Requirement already satisfied: requests<3,>=2.27 in /usr/local/lib/python3.12/dist-packages (from streamlit) (2.32.4)\n",
+            "Requirement already satisfied: tenacity<10,>=8.1.0 in /usr/local/lib/python3.12/dist-packages (from streamlit) (9.1.4)\n",
+            "Requirement already satisfied: toml<2,>=0.10.1 in /usr/local/lib/python3.12/dist-packages (from streamlit) (0.10.2)\n",
+            "Requirement already satisfied: typing-extensions<5,>=4.10.0 in /usr/local/lib/python3.12/dist-packages (from streamlit) (4.15.0)\n",
+            "Requirement already satisfied: starlette>=0.40.0 in /usr/local/lib/python3.12/dist-packages (from streamlit) (1.3.1)\n",
+            "Requirement already satisfied: uvicorn>=0.30.0 in /usr/local/lib/python3.12/dist-packages (from streamlit) (0.49.0)\n",
+            "Requirement already satisfied: httptools>=0.6.3 in /usr/local/lib/python3.12/dist-packages (from streamlit) (0.8.0)\n",
+            "Requirement already satisfied: anyio>=4.0.0 in /usr/local/lib/python3.12/dist-packages (from streamlit) (4.14.0)\n",
+            "Requirement already satisfied: python-multipart>=0.0.10 in /usr/local/lib/python3.12/dist-packages (from streamlit) (0.0.32)\n",
+            "Requirement already satisfied: websockets>=12.0.0 in /usr/local/lib/python3.12/dist-packages (from streamlit) (15.0.1)\n",
+            "Requirement already satisfied: itsdangerous>=2.1.2 in /usr/local/lib/python3.12/dist-packages (from streamlit) (2.2.0)\n",
+            "Requirement already satisfied: watchdog<7,>=2.1.5 in /usr/local/lib/python3.12/dist-packages (from streamlit) (6.0.0)\n",
+            "Requirement already satisfied: jinja2 in /usr/local/lib/python3.12/dist-packages (from altair!=5.4.0,!=5.4.1,<7,>=4.0->streamlit) (3.1.6)\n",
+            "Requirement already satisfied: jsonschema>=3.0 in /usr/local/lib/python3.12/dist-packages (from altair!=5.4.0,!=5.4.1,<7,>=4.0->streamlit) (4.26.0)\n",
+            "Requirement already satisfied: narwhals>=1.14.2 in /usr/local/lib/python3.12/dist-packages (from altair!=5.4.0,!=5.4.1,<7,>=4.0->streamlit) (2.22.1)\n",
+            "Requirement already satisfied: idna>=2.8 in /usr/local/lib/python3.12/dist-packages (from anyio>=4.0.0->streamlit) (3.18)\n",
+            "Requirement already satisfied: gitdb<5,>=4.0.1 in /usr/local/lib/python3.12/dist-packages (from gitpython!=3.1.19,<4,>=3.0.7->streamlit) (4.0.12)\n",
+            "Requirement already satisfied: python-dateutil>=2.8.2 in /usr/local/lib/python3.12/dist-packages (from pandas<4,>=1.4.0->streamlit) (2.9.0.post0)\n",
+            "Requirement already satisfied: pytz>=2020.1 in /usr/local/lib/python3.12/dist-packages (from pandas<4,>=1.4.0->streamlit) (2025.2)\n",
+            "Requirement already satisfied: tzdata>=2022.7 in /usr/local/lib/python3.12/dist-packages (from pandas<4,>=1.4.0->streamlit) (2026.2)\n",
+            "Requirement already satisfied: charset_normalizer<4,>=2 in /usr/local/lib/python3.12/dist-packages (from requests<3,>=2.27->streamlit) (3.4.7)\n",
+            "Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.12/dist-packages (from requests<3,>=2.27->streamlit) (2.5.0)\n",
+            "Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.12/dist-packages (from requests<3,>=2.27->streamlit) (2026.6.17)\n",
+            "Requirement already satisfied: h11>=0.8 in /usr/local/lib/python3.12/dist-packages (from uvicorn>=0.30.0->streamlit) (0.16.0)\n",
+            "Requirement already satisfied: smmap<6,>=3.0.1 in /usr/local/lib/python3.12/dist-packages (from gitdb<5,>=4.0.1->gitpython!=3.1.19,<4,>=3.0.7->streamlit) (5.0.3)\n",
+            "Requirement already satisfied: MarkupSafe>=2.0 in /usr/local/lib/python3.12/dist-packages (from jinja2->altair!=5.4.0,!=5.4.1,<7,>=4.0->streamlit) (3.0.3)\n",
+            "Requirement already satisfied: attrs>=22.2.0 in /usr/local/lib/python3.12/dist-packages (from jsonschema>=3.0->altair!=5.4.0,!=5.4.1,<7,>=4.0->streamlit) (26.1.0)\n",
+            "Requirement already satisfied: jsonschema-specifications>=2023.03.6 in /usr/local/lib/python3.12/dist-packages (from jsonschema>=3.0->altair!=5.4.0,!=5.4.1,<7,>=4.0->streamlit) (2025.9.1)\n",
+            "Requirement already satisfied: referencing>=0.28.4 in /usr/local/lib/python3.12/dist-packages (from jsonschema>=3.0->altair!=5.4.0,!=5.4.1,<7,>=4.0->streamlit) (0.37.0)\n",
+            "Requirement already satisfied: rpds-py>=0.25.0 in /usr/local/lib/python3.12/dist-packages (from jsonschema>=3.0->altair!=5.4.0,!=5.4.1,<7,>=4.0->streamlit) (2026.5.1)\n",
+            "Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.12/dist-packages (from python-dateutil>=2.8.2->pandas<4,>=1.4.0->streamlit) (1.17.0)\n",
+            "Downloading streamlit-1.59.1-py3-none-any.whl (10.3 MB)\n",
+            "\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m10.3/10.3 MB\u001b[0m \u001b[31m55.2 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[?25hDownloading pydeck-0.9.3-py2.py3-none-any.whl (11.4 MB)\n",
+            "\u001b[2K   \u001b[90m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\u001b[0m \u001b[32m11.4/11.4 MB\u001b[0m \u001b[31m75.8 MB/s\u001b[0m eta \u001b[36m0:00:00\u001b[0m\n",
+            "\u001b[?25hInstalling collected packages: pydeck, streamlit\n",
+            "Successfully installed pydeck-0.9.3 streamlit-1.59.1\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!streamlit run app.py"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "SKnTvCYgtJ4W",
+        "outputId": "00398d2c-4abb-4b97-8143-09516ca7cc9f"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "\n",
+            "Collecting usage statistics. To deactivate, set browser.gatherUsageStats to false.\n",
+            "\u001b[0m\n",
+            "2026-07-10 02:13:17.687 Uvicorn server started on :::8501\n",
+            "\u001b[0m\n",
+            "\u001b[34m\u001b[1m  You can now view your Streamlit app in your browser.\u001b[0m\n",
+            "\u001b[0m\n",
+            "\u001b[34m  Local URL: \u001b[0m\u001b[1mhttp://localhost:8501\u001b[0m\n",
+            "\u001b[34m  Network URL: \u001b[0m\u001b[1mhttp://172.28.0.12:8501\u001b[0m\n",
+            "\u001b[34m  External URL: \u001b[0m\u001b[1mhttp://35.227.27.14:8501\u001b[0m\n",
+            "\u001b[0m\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Run Streamlit"
+      ],
+      "metadata": {
+        "id": "ZY7E3qUktHD2"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [],
+      "metadata": {
+        "id": "7svIoOfPtAEr"
+      },
+      "execution_count": 12,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!pip install Gradio\n",
+        "!pip install plotly"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "h-qWyFI0xRPS",
+        "outputId": "b970121a-14f3-4f0d-d475-d9b89689afe8"
+      },
+      "execution_count": 15,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: Gradio in /usr/local/lib/python3.12/dist-packages (6.19.0)\n",
+            "Requirement already satisfied: anyio<5.0,>=3.0 in /usr/local/lib/python3.12/dist-packages (from Gradio) (4.14.0)\n",
+            "Requirement already satisfied: brotli>=1.1.0 in /usr/local/lib/python3.12/dist-packages (from Gradio) (1.2.0)\n",
+            "Requirement already satisfied: fastapi<1.0,>=0.115.2 in /usr/local/lib/python3.12/dist-packages (from Gradio) (0.138.0)\n",
+            "Requirement already satisfied: gradio-client==2.5.0 in /usr/local/lib/python3.12/dist-packages (from Gradio) (2.5.0)\n",
+            "Requirement already satisfied: groovy~=0.1 in /usr/local/lib/python3.12/dist-packages (from Gradio) (0.1.2)\n",
+            "Requirement already satisfied: hf-gradio<1.0,>=0.4.1 in /usr/local/lib/python3.12/dist-packages (from Gradio) (0.4.1)\n",
+            "Requirement already satisfied: httpx<1.0,>=0.24.1 in /usr/local/lib/python3.12/dist-packages (from Gradio) (0.28.1)\n",
+            "Requirement already satisfied: huggingface-hub<2.0,>=1.2.0 in /usr/local/lib/python3.12/dist-packages (from Gradio) (1.20.1)\n",
+            "Requirement already satisfied: jinja2<4.0 in /usr/local/lib/python3.12/dist-packages (from Gradio) (3.1.6)\n",
+            "Requirement already satisfied: markupsafe<4.0,>=2.0 in /usr/local/lib/python3.12/dist-packages (from Gradio) (3.0.3)\n",
+            "Requirement already satisfied: numpy<3.0,>=1.0 in /usr/local/lib/python3.12/dist-packages (from Gradio) (2.0.2)\n",
+            "Requirement already satisfied: orjson~=3.0 in /usr/local/lib/python3.12/dist-packages (from Gradio) (3.11.9)\n",
+            "Requirement already satisfied: packaging in /usr/local/lib/python3.12/dist-packages (from Gradio) (26.2)\n",
+            "Requirement already satisfied: pandas<4.0,>=1.0 in /usr/local/lib/python3.12/dist-packages (from Gradio) (2.2.2)\n",
+            "Requirement already satisfied: pillow<13.0,>=8.0 in /usr/local/lib/python3.12/dist-packages (from Gradio) (11.3.0)\n",
+            "Requirement already satisfied: pydantic<=3.0,>=2.0 in /usr/local/lib/python3.12/dist-packages (from Gradio) (2.13.4)\n",
+            "Requirement already satisfied: pydub<1.0 in /usr/local/lib/python3.12/dist-packages (from Gradio) (0.25.1)\n",
+            "Requirement already satisfied: python-multipart<1.0,>=0.0.18 in /usr/local/lib/python3.12/dist-packages (from Gradio) (0.0.32)\n",
+            "Requirement already satisfied: pytz>=2017.2 in /usr/local/lib/python3.12/dist-packages (from Gradio) (2025.2)\n",
+            "Requirement already satisfied: pyyaml<7.0,>=5.0 in /usr/local/lib/python3.12/dist-packages (from Gradio) (6.0.3)\n",
+            "Requirement already satisfied: safehttpx<0.2.0,>=0.1.7 in /usr/local/lib/python3.12/dist-packages (from Gradio) (0.1.7)\n",
+            "Requirement already satisfied: semantic-version~=2.0 in /usr/local/lib/python3.12/dist-packages (from Gradio) (2.10.0)\n",
+            "Requirement already satisfied: starlette<2.0,>=1.0.1 in /usr/local/lib/python3.12/dist-packages (from Gradio) (1.3.1)\n",
+            "Requirement already satisfied: tomlkit<0.15.0,>=0.12.0 in /usr/local/lib/python3.12/dist-packages (from Gradio) (0.14.0)\n",
+            "Requirement already satisfied: typer<1.0,>=0.12 in /usr/local/lib/python3.12/dist-packages (from Gradio) (0.25.1)\n",
+            "Requirement already satisfied: typing-extensions~=4.0 in /usr/local/lib/python3.12/dist-packages (from Gradio) (4.15.0)\n",
+            "Requirement already satisfied: uvicorn>=0.14.0 in /usr/local/lib/python3.12/dist-packages (from Gradio) (0.49.0)\n",
+            "Requirement already satisfied: fsspec in /usr/local/lib/python3.12/dist-packages (from gradio-client==2.5.0->Gradio) (2025.3.0)\n",
+            "Requirement already satisfied: idna>=2.8 in /usr/local/lib/python3.12/dist-packages (from anyio<5.0,>=3.0->Gradio) (3.18)\n",
+            "Requirement already satisfied: typing-inspection>=0.4.2 in /usr/local/lib/python3.12/dist-packages (from fastapi<1.0,>=0.115.2->Gradio) (0.4.2)\n",
+            "Requirement already satisfied: annotated-doc>=0.0.2 in /usr/local/lib/python3.12/dist-packages (from fastapi<1.0,>=0.115.2->Gradio) (0.0.4)\n",
+            "Requirement already satisfied: certifi in /usr/local/lib/python3.12/dist-packages (from httpx<1.0,>=0.24.1->Gradio) (2026.6.17)\n",
+            "Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.12/dist-packages (from httpx<1.0,>=0.24.1->Gradio) (1.0.9)\n",
+            "Requirement already satisfied: h11>=0.16 in /usr/local/lib/python3.12/dist-packages (from httpcore==1.*->httpx<1.0,>=0.24.1->Gradio) (0.16.0)\n",
+            "Requirement already satisfied: click>=8.4.0 in /usr/local/lib/python3.12/dist-packages (from huggingface-hub<2.0,>=1.2.0->Gradio) (8.4.2)\n",
+            "Requirement already satisfied: filelock>=3.10.0 in /usr/local/lib/python3.12/dist-packages (from huggingface-hub<2.0,>=1.2.0->Gradio) (3.29.4)\n",
+            "Requirement already satisfied: hf-xet<2.0.0,>=1.5.1 in /usr/local/lib/python3.12/dist-packages (from huggingface-hub<2.0,>=1.2.0->Gradio) (1.5.1)\n",
+            "Requirement already satisfied: tqdm>=4.42.1 in /usr/local/lib/python3.12/dist-packages (from huggingface-hub<2.0,>=1.2.0->Gradio) (4.67.3)\n",
+            "Requirement already satisfied: python-dateutil>=2.8.2 in /usr/local/lib/python3.12/dist-packages (from pandas<4.0,>=1.0->Gradio) (2.9.0.post0)\n",
+            "Requirement already satisfied: tzdata>=2022.7 in /usr/local/lib/python3.12/dist-packages (from pandas<4.0,>=1.0->Gradio) (2026.2)\n",
+            "Requirement already satisfied: annotated-types>=0.6.0 in /usr/local/lib/python3.12/dist-packages (from pydantic<=3.0,>=2.0->Gradio) (0.7.0)\n",
+            "Requirement already satisfied: pydantic-core==2.46.4 in /usr/local/lib/python3.12/dist-packages (from pydantic<=3.0,>=2.0->Gradio) (2.46.4)\n",
+            "Requirement already satisfied: shellingham>=1.3.0 in /usr/local/lib/python3.12/dist-packages (from typer<1.0,>=0.12->Gradio) (1.5.4)\n",
+            "Requirement already satisfied: rich>=13.8.0 in /usr/local/lib/python3.12/dist-packages (from typer<1.0,>=0.12->Gradio) (13.9.4)\n",
+            "Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.12/dist-packages (from python-dateutil>=2.8.2->pandas<4.0,>=1.0->Gradio) (1.17.0)\n",
+            "Requirement already satisfied: markdown-it-py>=2.2.0 in /usr/local/lib/python3.12/dist-packages (from rich>=13.8.0->typer<1.0,>=0.12->Gradio) (4.2.0)\n",
+            "Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /usr/local/lib/python3.12/dist-packages (from rich>=13.8.0->typer<1.0,>=0.12->Gradio) (2.20.0)\n",
+            "Requirement already satisfied: mdurl~=0.1 in /usr/local/lib/python3.12/dist-packages (from markdown-it-py>=2.2.0->rich>=13.8.0->typer<1.0,>=0.12->Gradio) (0.1.2)\n",
+            "Requirement already satisfied: plotly in /usr/local/lib/python3.12/dist-packages (5.24.1)\n",
+            "Requirement already satisfied: tenacity>=6.2.0 in /usr/local/lib/python3.12/dist-packages (from plotly) (9.1.4)\n",
+            "Requirement already satisfied: packaging in /usr/local/lib/python3.12/dist-packages (from plotly) (26.2)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "20bd5029"
+      },
+      "source": [
+        "import gradio as gr"
+      ],
+      "execution_count": 16,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 646
+        },
+        "collapsed": true,
+        "id": "24c911d2",
+        "outputId": "c0230d54-6bca-45f6-9c04-c632d6822110"
+      },
+      "source": [
+        "def show_vendors(vendor_name=\"\"):\n",
+        "    if vendor_name:\n",
+        "        return df_vendors[df_vendors['Vendor'].str.contains(vendor_name, case=False, na=False)]\n",
+        "    return df_vendors\n",
+        "\n",
+        "iface = gr.Interface(fn=show_vendors, inputs=gr.Textbox(label=\"Vendor Name\"), outputs=\"dataframe\", title=\"Vendor Detail\")\n",
+        "iface.launch()"
+      ],
+      "execution_count": 18,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "It looks like you are running Gradio on a hosted Jupyter notebook, which requires `share=True`. Automatically setting `share=True` (you can turn this off by setting `share=False` in `launch()` explicitly).\n",
+            "\n",
+            "Colab notebook detected. To show errors in colab notebook, set debug=True in launch()\n",
+            "* Running on public URL: https://c41bb13a66df713856.gradio.live\n",
+            "\n",
+            "This share link is temporary and will last for up to 1 week (best effort). For free permanent hosting and GPU upgrades, run `gradio deploy` from the terminal in the working directory to deploy to Hugging Face Spaces (https://huggingface.co/spaces)\n"
+          ]
+        },
+        {
+          "output_type": "display_data",
+          "data": {
+            "text/plain": [
+              "<IPython.core.display.HTML object>"
+            ],
+            "text/html": [
+              "<div><iframe src=\"https://c41bb13a66df713856.gradio.live\" width=\"100%\" height=\"500\" allow=\"autoplay; camera; microphone; clipboard-read; clipboard-write;\" frameborder=\"0\" allowfullscreen></iframe></div>"
+            ]
+          },
+          "metadata": {}
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": []
+          },
+          "metadata": {},
+          "execution_count": 18
+        }
+      ]
+    }
+  ]
+}

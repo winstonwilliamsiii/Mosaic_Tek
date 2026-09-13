@@ -9,7 +9,10 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
   tanstackStart: {
-    server: { entry: "server" },
+    // REMOVE server: { entry: "server" }
+  },
+  nitro: {
+    preset: "static"
   },
   vite: {
     build: {
@@ -18,8 +21,5 @@ export default defineConfig({
     resolve: {
       tsconfigPaths: true
     }
-  },
-  nitro: {
-    preset: "static"
   }
 });

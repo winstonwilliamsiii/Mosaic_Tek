@@ -1,0 +1,10 @@
+wrangler.toml
+
+name = "mosaic-tek"
+main = ".output/server/index.mjs"
+compatibility_date = "2024-09-01"
+
+[site]
+bucket = ".output/public"
+
+
